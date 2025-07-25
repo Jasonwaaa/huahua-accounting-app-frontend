@@ -6,22 +6,44 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "cspell": "^9.1.5",
+    "gsap": "^3.13.0",
+    "lint-staged": "^16.1.2",
+    "lucide-react": "^0.525.0",
+    "next": "15.4.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.4.1"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@cspell/eslint-plugin": "^9.1.5",
+    "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.31.0",
+    "@stylistic/eslint-plugin": "^5.2.0",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "commitlint": "^19.8.1",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
-    "@eslint/eslintrc": "^3"
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-regex": "^1.10.0",
+    "eslint-plugin-storybook": "^9.0.17",
+    "eslint-plugin-testing-library": "^7.6.0",
+    "eslint-plugin-vitest": "^0.5.4",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "typescript-eslint": "^8.37.0"
   }
 }
