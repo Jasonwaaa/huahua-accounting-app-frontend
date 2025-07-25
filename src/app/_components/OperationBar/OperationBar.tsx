@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import Modal from "@/_components/Modal";
 import Button from "@/_components/Button";
 
-const OpreationBar : FC = () => {
+const OperationBar : FC = () => {
     const [IsCreateItemOpen,SetIsCreateItemOpen] = useState(false);
 
 return(
@@ -26,4 +26,4 @@ return(
   </div>
 );}
 
-export default OpreationBar;
+export default OperationBar;

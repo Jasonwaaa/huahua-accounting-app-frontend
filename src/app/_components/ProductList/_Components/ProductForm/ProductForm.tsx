@@ -1,7 +1,7 @@
 import Button from "@/_components/Button";
 import { FC, useState, useEffect } from "react";
 
-type Product = {
+interface Product  {
     name: string;
     price: number;
 }
@@ -15,9 +15,9 @@ interface Props {
 
 const ProductForm: FC<Props> = ({ 
     onSubmit, 
-    initialData, 
+    initialData= undefined, 
     mode = 'create',
-    onCancel 
+    onCancel= undefined 
 }) => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState<number>(0);
