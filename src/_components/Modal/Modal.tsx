@@ -23,7 +23,7 @@ const Modal: FC<Props> = ({ onClose = undefined, children, title }) => {
         <div
           role="dialog"
           aria-label="Modal"
-          className="w-[410px] rounded-lg bg-white p-8 shadow-lg"
+          className="w-[410px] rounded-lg p-8 shadow-lg"
         >
           <Header onClose={onClose}>{title}</Header>
           <div className="mt-4">{children}</div>
