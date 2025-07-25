@@ -1,0 +1,4 @@
+/* Remove the browser password reveal icon when using Edge */
+input::-ms-reveal {
+  display: none;
+}
