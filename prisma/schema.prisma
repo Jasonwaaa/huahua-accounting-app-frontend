@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String
+  password     String
+  role         UserRole      @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  orders       Order[]       // 用户的订单
+  groupBuys    GroupBuy[]    // 管理员发起的团购 (新增)
+  products     Product[]     // 用户的产品
+  @@map("users")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   // 蛋糕名称
+  
+  // 价格
+  price       Decimal  @db.Decimal(8, 2) // 售价
+  
+  category    ProductCategory @default(CAKE) // 产品类别
+  
+  // 基本信息
+  description String?  // 描述 (可选)
+  isAvailable Boolean  @default(true) // 是否有售
+  
+  // 时间戳
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[] // 订单商品
+  userId   Int
+  user     User  @relation(fields: [userId], references: [id])
+  @@map("products")
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  
+  orderNumber     String      @unique @default(uuid()) 
+  
+  // 客户信息
+  customerName    String      // 客户姓名
+  customerPhone   String      // 客户电话
+  customerEmail   String?     // 客户邮箱 (可选)
+  
+  // 配送信息
+  deliveryAddress String      // 配送地址
+  deliveryDate    DateTime    // 配送日期
+  deliveryTime    String?     // 配送时间段 (如: "上午9-12点")
+  
+  // 订单状态
+  isCompleted     Boolean     @default(false) // 是否完成
+  isPaid          Boolean     @default(false) // 是否收到货款
+  orderStatus     OrderStatus @default(PENDING) // 订单状态
+  
+  // 金额信息
+  totalAmount     Decimal     @db.Decimal(10, 2) // 订单总金额
+  paidAmount      Decimal?    @db.Decimal(10, 2) // 已付金额
+  
+  // 备注
+  notes           String?     // 订单备注
+  
+  // 时间戳
+  createdAt       DateTime    @default(now())   // 下单时间
+  updatedAt       DateTime    @updatedAt
+
+  groupBuyId      Int?        // 所属团购 (可选)
+  groupBuy        GroupBuy?   @relation(fields: [groupBuyId], references: [id])
+  isGroupBuyOrder Boolean     @default(false)
+  
+  // 关联关系
+  userId          Int
+  user            User        @relation(fields: [userId], references: [id])
+  orderItems      OrderItem[] // 订单商品
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  quantity    Int     // 数量
+  unitPrice   Decimal @db.Decimal(8, 2) // 单价
+  totalPrice  Decimal @db.Decimal(10, 2) // 小计
+  
+  // 产品快照 (防止产品信息变更影响历史订单)
+  productName String  // 产品名称快照
+  productCategory ProductCategory // 产品类别快照
+  
+  // 关联关系
+  orderId     Int
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id])
+  
+  @@map("order_items")
+}
+
+model GroupBuy {
+  id              Int         @id @default(autoincrement())
+  groupBuyNumber  String      @unique @default(uuid()) // 团购编号
+  
+  // 团购信息
+  title           String      // 团购标题
+  description     String?     // 团购描述
+  
+  // 团购时间
+  startDate       DateTime    // 团购开始时间
+  endDate         DateTime    // 团购结束时间
+  deliveryDate    DateTime    // 统一配送日期
+  
+  // 团购状态
+  status          GroupBuyStatus @default(ACTIVE) // 团购状态
+  isActive        Boolean     @default(true)      // 是否激活
+  
+  // 团购规则
+  minQuantity     Int?        // 最低成团数量
+  maxQuantity     Int?        // 最大参与数量
+  discountRate    Decimal?    @db.Decimal(5, 2) // 折扣率 (如: 0.85 = 8.5折)
+  
+  // 统计信息
+  totalOrders     Int         @default(0)     // 订单总数
+  totalAmount     Decimal     @default(0) @db.Decimal(12, 2) // 总金额
+  
+  // 时间戳
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // 关联关系
+  adminId         Int         // 发起的管理员
+  admin           User        @relation(fields: [adminId], references: [id])
+  orders          Order[]     // 团购下的所有订单
+  
+  @@map("group_buys")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum ProductCategory {
+  CAKE        // 蛋糕
+  BREAD       // 面包
+  PASTRY      // 糕点
+  DESSERT     // 甜品
+  CUSTOM      // 定制
+}
+
+enum OrderStatus {
+  PENDING     // 待处理
+  CONFIRMED   // 已确认
+  PREPARING   // 制作中
+  READY       // 制作完成
+  DELIVERING  // 配送中
+  DELIVERED   // 已送达
+  CANCELLED   // 已取消
+}
+
+enum GroupBuyStatus {
+  DRAFT       // 草稿
+  ACTIVE      // 进行中
+  ENDED       // 已结束
+  CANCELLED   // 已取消
+  COMPLETED   // 已完成
+}
