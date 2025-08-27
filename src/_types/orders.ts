@@ -1,4 +1,18 @@
-export interface Order {
+export interface OrderItem {
+  id: number;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  productName: string;
+  productId: number;
+  product?: {
+    id: number;
+    name: string;
+    category?: string;
+  };
+}
+
+export interface OrderInfo {
   id: number;
   orderNumber: string;
   customerName: string;
@@ -11,24 +25,16 @@ export interface Order {
   totalAmount: number;
   notes?: string;
   createdAt: string;
-  orderItems: {
-    id: number;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    productName: string;
-    productId: number;
-    product?: {
-      id: number;
-      name: string;
-      category?: string;
-    };
-  }[];
+}
+
+// 兼容旧用法：完整订单类型
+export interface Order extends OrderInfo {
+  orderItems: OrderItem[];
 }
 
 export interface Summary {
-    productId: number | null;
-    name: string;
-    totalQuantity: number;
-    totalAmount: number;
+  productId: number | null;
+  name: string;
+  totalQuantity: number;
+  totalAmount: number;
 }

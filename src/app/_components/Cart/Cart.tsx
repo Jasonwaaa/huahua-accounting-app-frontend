@@ -3,6 +3,7 @@ import { FC, useState } from 'react';
 import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { UpdatedProduct } from '@/_types/api';
 import OrderForm from '../Products/_components/OrdersForm';
+import { mutate as swrMutate } from 'swr';
 
 interface Props {
   cartItems: Record<number,number>; // productId: quantity
@@ -73,6 +74,8 @@ const Cart: FC<Props> = ({
   const handleOrderCreated = ():void => {
     setIsOrderFormOpen(false);
     onClearCart(); // 清空购物车
+    const key = groupBuyId ? (['orders', groupBuyId] as const) : 'orders';
+    void swrMutate(key); // 刷新对应的 Orders 列表
   };
 
   // 关闭订单表单
