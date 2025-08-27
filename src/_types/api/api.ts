@@ -84,6 +84,7 @@ export interface CreateOrderInput {
   notes?: string;
   userId?: number;
   orderItems: OrderItem[];
+  groupBuyId?: number; // 新增，可选的团购ID
 }
 
 // 更新订单的输入类型

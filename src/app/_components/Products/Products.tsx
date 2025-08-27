@@ -1,3 +1,4 @@
+'use client';
 import { FC, useState } from "react";
 import useProducts from "@/_hooks/useProducts";
 import ProductCard from "./_components/ProductCard";
@@ -5,7 +6,11 @@ import Cart from "../Cart";
 
 type CartItems = Record<number, number>; // 商品ID到数量的映射
 
-const Products: FC = () => {
+interface Props {
+    groupBuyId?: number; // 可选的团购ID
+}
+
+const Products: FC<Props> = ({groupBuyId=undefined}) => {
     const [cartItems, setCartItems] = useState<CartItems>({});
     const { data: products, isLoading } = useProducts();
 
@@ -68,6 +73,7 @@ const Products: FC = () => {
                         onUpdateQuantity={handleUpdateQuantity}
                         onRemoveItem={handleRemoveItem}
                         onClearCart={handleClearCart}
+                        groupBuyId={groupBuyId}
                     />
                 </div>
             </div>

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { FC, ReactNode } from "react";
+import Link from "next/link";
+import { Home as HomeIcon } from "lucide-react";
 import "./globals.css";
 
 interface Props {
   children: ReactNode;
 }
-
 
 export const metadata: Metadata = {
   title: "Cake Order App",
@@ -17,13 +18,28 @@ const RootLayout:FC<Props> = ({
 }: Readonly<{
   children: ReactNode;
 }>) =>(
-    <html lang="en">
-      <body>
+  <html lang="en">
+    <body className="min-h-screen bg-white ">
+      {/* 顶部导航 */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b bg-white">
+        <div className="mx-auto max-w-screen-2xl px-4 py-3">
+          <Link
+            href="/"
+            aria-label="Home"
+            className="inline-flex items-center text-black hover:opacity-80"
+          >
+            <HomeIcon className="h-5 w-5" />
+            <span className="sr-only">Home</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* 页面内容，留出顶部空间 */}
+      <main className="pt-14">
         {children}
-
-      </body>
-    </html>
-  );
-
+      </main>
+    </body>
+  </html>
+);
 
 export default RootLayout;

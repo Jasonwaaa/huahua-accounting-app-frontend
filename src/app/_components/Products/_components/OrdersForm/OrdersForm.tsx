@@ -18,8 +18,9 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   cartItems: Record<number, number>;
-  products: UpdatedProduct[]; // 使用正确的产品类型
+  products: UpdatedProduct[];
   onOrderCreated?: () => void;
+  groupBuyId?: number; // 新增：可选团购ID
 }
 
 // 表单验证 Schema
@@ -46,7 +47,8 @@ const OrderForm: FC<Props> = ({
   onClose,
   cartItems,
   products,
-  onOrderCreated= undefined
+  onOrderCreated= undefined,
+  groupBuyId= undefined
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -105,22 +107,19 @@ const OrderForm: FC<Props> = ({
   // 提交订单
   const onSubmit = async (data: OrderFormData): Promise<void> => {
     setIsSubmitting(true);
-    
     try {
-      // 创建符合API接口的订单数据
       const orderData: CreateOrderInput = {
         ...data,
-        userId: 1, // 默认用户ID
-        orderItems: generateOrderItems()
+        userId: 1,
+        orderItems: generateOrderItems(),
+        ...(typeof groupBuyId === 'number' ? { groupBuyId } : {}), // 携带 groupBuyId
       };
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3456';
-      
+
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
 

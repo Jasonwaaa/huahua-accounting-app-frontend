@@ -1,3 +1,4 @@
+'use client';
 import { FC, useState } from 'react';
 import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { UpdatedProduct } from '@/_types/api';
@@ -9,6 +10,7 @@ interface Props {
   onUpdateQuantity: (productId: number, quantity: number) => void;
   onRemoveItem: (productId: number) => void;
   onClearCart: () => void;
+  groupBuyId?: number; // 新增
 }
 
 const Cart: FC<Props> = ({
@@ -16,7 +18,8 @@ const Cart: FC<Props> = ({
   products,
   onUpdateQuantity,
   onRemoveItem,
-  onClearCart
+  onClearCart,
+  groupBuyId = undefined
 }) => {
   // 添加订单表单模态框状态
   const [isOrderFormOpen, setIsOrderFormOpen] = useState(false);
@@ -208,6 +211,7 @@ const Cart: FC<Props> = ({
         cartItems={cartItems}
         products={products}
         onOrderCreated={handleOrderCreated}
+        groupBuyId={groupBuyId}
       />
     </>
   );

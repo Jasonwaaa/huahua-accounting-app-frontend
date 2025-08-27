@@ -4,7 +4,7 @@ import type { FC, ComponentType } from 'react';
 import { useState } from 'react';
 import ProductList from './_components/ProductList';
 import Products from './_components/Products';
-import Orders from './_components/Products/_components/Orders';
+import Orders from './_components/Orders';
 import  GroupBuyComponent  from './_components/GroupBuy';
 
 // 用 enum 统一管理视图 key

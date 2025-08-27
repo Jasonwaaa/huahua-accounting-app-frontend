@@ -1,6 +1,7 @@
 import { FC, useState} from "react";
 import Header from "./_components/Header";
 import Modal from "@/_components/Modal";
+import GroupBuyList from "./_components/GroupBuyList";
 import CreateGroupBuyForm from "./_components/CreateGroupBuyForm";
 
 
@@ -11,7 +12,7 @@ const GroupBuy:FC = () => {
     return(
         <div className="p-4">
             <Header onStartGroupBuy={() => setStartGroupBuy(true)} />
-            Group Buy Component
+            <GroupBuyList/>
             {startGroupBuy && (
                 <Modal
                     title="Start Group Buy"
