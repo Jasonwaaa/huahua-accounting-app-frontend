@@ -1,1 +1,1 @@
-export type {Product, ProductCategory,UpdatedProduct} from './api';
+export type {Product, ProductCategory,UpdatedProduct, OrderItem,CreateOrderInput,UpdatedOrder,OrderStatus,OrderQueryParams,OrderListResponse} from './api';

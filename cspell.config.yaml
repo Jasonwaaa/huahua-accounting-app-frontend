@@ -7,5 +7,7 @@ words:
   - upserts
   - unis
   - localised
-flagWords: null
-suggestWords: null
+  - groupbuy
+  
+flagWords: []
+suggestWords: []
