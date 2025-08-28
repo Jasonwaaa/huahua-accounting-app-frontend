@@ -57,7 +57,6 @@ const Home: FC = () => {
       {/* Main */}
       <main className="flex-1 p-6">
         <Active />
-        <div id="modal-root" />
       </main>
     </div>
   );

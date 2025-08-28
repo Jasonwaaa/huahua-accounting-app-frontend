@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, useState } from 'react';
 import Info from './_components/Info';
 import { UpdatedProduct } from '@/_types/api';
@@ -57,6 +59,10 @@ const OrderItem: FC<Props> = ({ order, products = [] }) => {
     }
   };
 
+  const handleEdit = (): void => {
+    setIsEditing(true);
+  };
+
   return (
     <div className="bg-white border border-black rounded-lg p-6">
       {/* 头部 + 联系/配送信息交给 Info 渲染 */}
@@ -77,7 +83,7 @@ const OrderItem: FC<Props> = ({ order, products = [] }) => {
       </div>
 
       <OperationButtons
-        onEdit={() => setIsEditing(true)}
+        onEdit={() => void handleEdit()}
         onDelete={() => void handleDelete()}
       />
 

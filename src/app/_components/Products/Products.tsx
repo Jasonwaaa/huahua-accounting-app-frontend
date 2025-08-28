@@ -8,6 +8,7 @@ type CartItems = Record<number, number>; // 商品ID到数量的映射
 
 interface Props {
     groupBuyId?: number; // 可选的团购ID
+    onOrderCreated?: () => void; // 订单创建后的回调
 }
 
 const Products: FC<Props> = ({groupBuyId=undefined}) => {

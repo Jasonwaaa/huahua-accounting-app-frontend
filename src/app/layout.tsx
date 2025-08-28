@@ -37,6 +37,7 @@ const RootLayout:FC<Props> = ({
       {/* 页面内容，留出顶部空间 */}
       <main className="pt-14">
         {children}
+          <div id="modal-root" />
       </main>
     </body>
   </html>
