@@ -3,7 +3,9 @@ import type { Order } from '@/_types/orders';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3456';
 
-const getOrders = async (groupId?: number): Promise<Order[]> => {
+type OrderWithId = Order & { id: number };
+
+const getOrders = async (groupId?: number): Promise<OrderWithId[]> => {
   try {
     const url = groupId
       ? `${API_BASE_URL}/api/group-buys/${groupId}/orders`
@@ -20,7 +22,7 @@ const getOrders = async (groupId?: number): Promise<Order[]> => {
       return [];
     }
 
-    const json = (await res.json().catch(() => null)) as { data?: { orders?: Order[] } } | null;
+    const json = (await res.json().catch(() => null)) as { data?: { orders?: OrderWithId[] } } | null;
     const orders = json?.data?.orders ?? [];
 
     return Array.isArray(orders) ? orders : [];

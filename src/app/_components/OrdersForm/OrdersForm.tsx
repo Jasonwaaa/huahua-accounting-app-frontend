@@ -1,24 +1,25 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-console */
-import { FC, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Calendar, Clock, MapPin, Phone, Mail, User } from 'lucide-react';
 import { 
-  CreateOrderInput, 
-  OrderItem, 
-  UpdatedProduct 
+  CreateOrderInput, // 新增
 } from '@/_types/api';
+import { Order, OrderItem } from '@/_types/orders'; // 新增
+import {Order as UpdatedOrder} from '@/_types/api'; // 新增
+import upsertOrder from '@/_db/upsertOrder'; // 新增
+import useProducts from '@/_hooks/useProducts';
 
 // 表单数据类型（基于API接口）
 type OrderFormData = Omit<CreateOrderInput, 'orderItems' | 'userId'>;
 
 interface Props {
-  isOpen: boolean;
   onClose: () => void;
   cartItems: Record<number, number>;
-  products: UpdatedProduct[];
+  order?:Order; 
   onOrderCreated?: () => void;
   groupBuyId?: number; // 新增：可选团购ID
 }
@@ -36,22 +37,40 @@ const OrderSchema = z.object({
       return localFormat.test(val) || internationalFormat.test(val);
     }, '请输入正确的澳洲手机号 (如: 0412345678 或 +61412345678)'),
   customerEmail: z.string().email('请输入正确的邮箱地址').optional().or(z.literal('')),
-  deliveryAddress: z.string().min(5, '配送地址不能少于5个字符').max(200, '地址过长'),
+  deliveryAddress: z.string().min(1, '配送地址不能少于1个字符').max(200, '地址过长'),
   deliveryDate: z.string().min(1, '请选择配送日期'),
   deliveryTime: z.string().min(1, '请选择配送时间'),
   notes: z.string().max(500, '备注不能超过500字符').optional(),
 });
 
 const OrderForm: FC<Props> = ({
-  isOpen,
   onClose,
   cartItems,
-  products,
   onOrderCreated= undefined,
-  groupBuyId= undefined
+  groupBuyId= undefined,
+  order = undefined,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: productsData } = useProducts();
 
+  // 将传入的 order 映射为表单默认值（支持日期字符串/时间直接填充）
+  const toDateInput = (v?: string): string => {
+    if (!v) {return '';}
+    const d = new Date(v);
+
+    return Number.isNaN(d.getTime()) ? v : d.toISOString().split('T')[0];
+  };
+
+  const defaultValuesFromOrder = useMemo(() => ({
+    customerName: order?.customerName ?? '',
+    customerPhone: order?.customerPhone ?? '',
+    customerEmail: order?.customerEmail ?? '',
+    deliveryAddress: order?.deliveryAddress ?? '',
+    deliveryDate: toDateInput(order?.deliveryDate),
+    deliveryTime: order?.deliveryTime ?? '',
+    notes: order?.notes ?? '',
+  }), [order]);
+ 
   const {
     register,
     handleSubmit,
@@ -59,95 +78,73 @@ const OrderForm: FC<Props> = ({
     reset
   } = useForm<OrderFormData>({
     resolver: zodResolver(OrderSchema),
-    defaultValues: {
-      customerName: '',
-      customerPhone: '',
-      customerEmail: '',
-      deliveryAddress: '',
-      deliveryDate: '',
-      deliveryTime: '',
-      notes: '',
-    }
-  });
+    defaultValues: defaultValuesFromOrder,
+   });
+
+  // 当外部传入的 order 变化时，重置表单为该订单的值
+  useEffect(() => {
+    reset(defaultValuesFromOrder);
+  }, [defaultValuesFromOrder, reset]);
 
   // 生成订单项目数据
   const generateOrderItems = (): OrderItem[] => (
-     Object.entries(cartItems).map(([productId, quantity]) => {
-      const product = products.find(p => p.id === parseInt(productId));
-      
-      if (!product) {
-        throw new Error(`Product with ID ${productId} not found`);
-      }
+    Object.entries(cartItems).map(([productId, quantity]) => {
+      const product = productsData?.find(p => p.id === parseInt(productId));
 
-      const unitPrice = typeof product.price === 'string' 
-        ? product.price 
-        : product.price.toString();
-      
+      const unitPrice = product
+        ? (typeof product.price === 'string' ? parseFloat(product.price) : product.price)
+        : 0;
+      const totalPrice = unitPrice * quantity;
+
       return {
+        id: 0, // 新订单项通常没有id，后端生成
         productId: parseInt(productId),
         quantity,
-        unitPrice
+        unitPrice,
+        totalPrice,
+        productName: product?.name ?? '',
       };
-    }))
-
+    })
+  );
 
   // 计算订单总计
   const calculateTotal = (): number => (
-     Object.entries(cartItems).reduce((total, [productId, quantity]) => {
-      const product = products.find(p => p.id === parseInt(productId));
-      if (!product) {return total};
-      
+    Object.entries(cartItems).reduce((total, [productId, quantity]) => {
+      const product = productsData?.find(p => p.id === parseInt(productId));
+      if (!product) {return total;}
+
       const price = typeof product.price === 'string' 
         ? parseFloat(product.price) 
         : product.price;
-      
-      return total + (price * quantity);
+
+      return total + price * quantity;  
     }, 0))
 
   // 提交订单
   const onSubmit = async (data: OrderFormData): Promise<void> => {
     setIsSubmitting(true);
     try {
-      const orderData: CreateOrderInput = {
+      // 组装为 Order 结构（无 id => 创建）
+      const orderToSubmit = {
         ...data,
         userId: 1,
         orderItems: generateOrderItems(),
-        ...(typeof groupBuyId === 'number' ? { groupBuyId } : {}), // 携带 groupBuyId
-      };
+        ...(typeof groupBuyId === 'number' ? { groupBuyId } : {}),
+      } as unknown as UpdatedOrder;
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3456';
+      await upsertOrder({ order: orderToSubmit });
 
-      const response = await fetch(`${API_BASE_URL}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
+      console.log('订单创建成功');
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`创建订单失败: ${response.status} - ${errorText}`);
-      }
-
-      const result: unknown = await response.json();
-      
-      console.log('订单创建成功:', result);
-      
       // 重置表单
       reset();
-      
-      // 调用成功回调
+      // 回调与关闭
       onOrderCreated?.();
-      
-      // 关闭表单
       onClose();
-      
-      // 用户友好的成功提示
+      // 友好提示（如无需前端提示可移除）
       alert('订单创建成功！');
-      
     } catch (error) {
       console.error('创建订单失败:', error);
-      
-      // 更详细的错误处理
       if (error instanceof Error) {
         alert(`创建订单失败: ${error.message}`);
       } else {
@@ -160,8 +157,7 @@ const OrderForm: FC<Props> = ({
 
   // 获取今天的日期（用于设置最小日期）
   const today = new Date().toISOString().split('T')[0];
-
-  if (!isOpen) {return null};
+  if (!productsData) { return null; }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -183,7 +179,7 @@ const OrderForm: FC<Props> = ({
           <h3 className="font-medium text-black mb-3">订单摘要</h3>
           <div className="space-y-2">
             {Object.entries(cartItems).map(([productId, quantity]) => {
-              const product = products.find(p => p.id === parseInt(productId));
+              const product = productsData.find((p) => p.id === parseInt(productId)) ;
               if (!product) {return null;}
               
               const price = typeof product.price === 'string' 
@@ -316,14 +312,6 @@ const OrderForm: FC<Props> = ({
                 }`}
               >
                 <option value="">请选择配送时间</option>
-                <option value="09:00">09:00</option>
-                <option value="10:00">10:00</option>
-                <option value="11:00">11:00</option>
-                <option value="12:00">12:00</option>
-                <option value="13:00">13:00</option>
-                <option value="14:00">14:00</option>
-                <option value="15:00">15:00</option>
-                <option value="16:00">16:00</option>
                 <option value="17:00">17:00</option>
                 <option value="18:00">18:00</option>
               </select>

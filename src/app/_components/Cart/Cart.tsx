@@ -2,7 +2,7 @@
 import { FC, useState } from 'react';
 import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { UpdatedProduct } from '@/_types/api';
-import OrderForm from '../Products/_components/OrdersForm';
+import OrderForm from '../OrdersForm';
 import { mutate as swrMutate } from 'swr';
 
 interface Props {
@@ -208,14 +208,13 @@ const Cart: FC<Props> = ({
       </div>
 
       {/* 订单表单模态框 */}
+      {isOrderFormOpen && (
       <OrderForm
-        isOpen={isOrderFormOpen}
         onClose={handleCloseOrderForm}
         cartItems={cartItems}
-        products={products}
         onOrderCreated={handleOrderCreated}
         groupBuyId={groupBuyId}
-      />
+      />)}
     </>
   );
 };

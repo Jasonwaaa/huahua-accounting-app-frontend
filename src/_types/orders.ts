@@ -24,10 +24,11 @@ export interface OrderInfo {
   orderStatus: string;
   totalAmount: number;
   notes?: string;
+  userId?: number;
+  groupBuyId?: number;
   createdAt: string;
 }
 
-// 兼容旧用法：完整订单类型
 export interface Order extends OrderInfo {
   orderItems: OrderItem[];
 }

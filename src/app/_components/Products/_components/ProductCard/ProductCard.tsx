@@ -40,7 +40,7 @@ const ProductCard: FC<ProductCardProps> = ({
     : product.price.toFixed(2);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow text-black">
       {/* 产品图片占位符 */}
       <div className="w-full h-48 bg-gray-200 rounded-md mb-4 flex items-center justify-center">
         <span className="text-gray-500 text-sm">Product Image</span>
@@ -48,11 +48,11 @@ const ProductCard: FC<ProductCardProps> = ({
 
       {/* 产品信息 */}
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+        <h3 className="text-lg font-semibold mb-2 line-clamp-2">
           {product.name}
         </h3>
         {product.description && (
-          <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+          <p className="text-sm  mb-2 line-clamp-2">
             {product.description}
           </p>
         )}
@@ -61,7 +61,7 @@ const ProductCard: FC<ProductCardProps> = ({
             ${displayPrice}
           </span>
           {product.category && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
               {product.category}
             </span>
           )}
@@ -82,7 +82,7 @@ const ProductCard: FC<ProductCardProps> = ({
           <button
             onClick={handleDecrease}
             disabled={quantity <= 1}
-            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Minus size={16} />
           </button>
@@ -93,7 +93,7 @@ const ProductCard: FC<ProductCardProps> = ({
           
           <button
             onClick={handleIncrease}
-            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
           >
             <Plus size={16} />
           </button>

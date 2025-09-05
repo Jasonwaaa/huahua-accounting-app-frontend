@@ -54,6 +54,7 @@ export interface Order {
   notes?: string;
   userId?: number;
   orderItems: OrderItem[];
+  groupBuyId?: number; // 可选的团购ID
 }
 
 export interface UpdatedOrder extends Order {
