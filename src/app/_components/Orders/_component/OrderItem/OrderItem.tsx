@@ -43,7 +43,6 @@ const OrderItem: FC<Props> = ({ order, products = [] }) => {
   const { orderItems, ...orderInfo } = order;
 
   const handleDelete = async (): Promise<void> => {
-    // 先确认，再进入加载态；不在前端处理异常（不 catch，不弹提示）
     if (!confirm(`确认删除订单 #${order.id} 吗？此操作不可撤销。`)) {return;}
 
     setIsDeleting(true);

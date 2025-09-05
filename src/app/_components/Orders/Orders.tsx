@@ -6,40 +6,27 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable curly */
 'use client';
-import { FC, useState, useMemo } from 'react';
+import { FC, useState } from 'react';
 import { Package } from 'lucide-react';
-import { UpdatedProduct } from '@/_types/api';
 import { Order } from '@/_types/orders';
 import OrderItem from './_component/OrderItem';
 import Summary from './_component/Summary';
 import useOrders from '@/_hooks/useOrders';
+import toNumber from '@/_utils/toNumber';
+import useProducts from '@/_hooks/useProducts';
 
 interface Props {
-  products?: UpdatedProduct[];
   groupId?: number;
 }
 
-const Orders: FC<Props> = ({ products = [], groupId = undefined }) => {
+const Orders: FC<Props> = ({ groupId = undefined }) => {
   const { data: ordersData, isLoading } = useOrders(groupId);
+  const { data: productsData } = useProducts();
+  const products = productsData ?? [];
   const [showSummary, setShowSummary] = useState(false);
 
-  // 从订单项解析产品名（与 OrderItem 内逻辑一致）
-
-
-  // 金额安全格式化（兼容 string/number）
-  const toNumber = (v: unknown): number => {
-    if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
-    if (typeof v === 'string') {
-      const n = Number(v);
-
-      return Number.isFinite(n) ? n : 0;
-    }
-
-    return 0;
-  };
-
-  // 汇总各商品的总数量与总金额
-  const summary = useMemo(() => {
+  // 直接计算（每次渲染时聚合）
+  const summary = (() : { productId: number | null; name: string; totalQuantity: number; totalAmount: number }[] => {
     const map = new Map<
       string,
       { productId: number | null; name: string; totalQuantity: number; totalAmount: number }
@@ -52,7 +39,8 @@ const Orders: FC<Props> = ({ products = [], groupId = undefined }) => {
 
       return p?.name ?? `产品 #${item.productId}`;
     };
-    for (const order of ordersData ?? []) {
+
+    for (const order of (ordersData ?? [])) {
       for (const it of order.orderItems) {
         const pid = typeof it.productId === 'number' ? it.productId : null;
         const name = getProductName(it);
@@ -69,7 +57,7 @@ const Orders: FC<Props> = ({ products = [], groupId = undefined }) => {
     }
 
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-  }, [ordersData, products]);
+  })();
 
   return (
     <div className="p-6 text-black bg-white">
@@ -104,7 +92,7 @@ const Orders: FC<Props> = ({ products = [], groupId = undefined }) => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {ordersData.map((order) => (
-                <OrderItem key={order.id} order={order} products={products} />
+                <OrderItem key={order.id} order={order} />
               ))}
             </div>
           )}
